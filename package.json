@@ -2,21 +2,14 @@
   "name": "tp-tenant",
   "type": "module",
   "version": "0.1.0",
-  "description": "ThingsPanel",
+  "description": "IOTPanel",
   "author": {
-    "name": "ThingsPanle"
+    "name": "IOTPanel"
   },
   "license": "GNU",
-  "homepage": "https://github.com/ThingsPanel/thingspanel-ui",
-  "repository": {
-    "url": "https://github.com/ThingsPanel/thingspanel-ui.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ThingsPanel/thingspanel-ui/issues"
-  },
   "keywords": [
     "Soybean Admin",
-    "ThingsPanel"
+    "IOTPanel"
   ],
   "scripts": {
     "build": "npm run typecheck &&  cross-env VITE_SERVICE_ENV=prod vite build",

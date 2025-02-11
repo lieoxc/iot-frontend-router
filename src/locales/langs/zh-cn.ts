@@ -219,7 +219,7 @@ const local: App.I18n.Schema = {
     }
   },
   default: '',
-  title: 'ThingsPanel',
+  title: 'IOTPanel',
   system: {
     title: 'System Name: {name}'
   },

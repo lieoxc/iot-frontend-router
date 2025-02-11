@@ -2,9 +2,9 @@ import { productLocaleEn } from '@/views/product/locales/en';
 
 const local: App.I18n.Schema = {
   default: '',
-  title: 'ThingsPanel',
+  title: 'IOTPanel',
   system: {
-    title: 'ThingsPanel'
+    title: 'IOTPanel'
   },
   common: {
     serviceConfi: 'Service Configuration',

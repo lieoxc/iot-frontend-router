@@ -5,11 +5,7 @@ defineOptions({
 </script>
 
 <template>
-  <DarkModeContainer class="h-full flex-center">
-    <a href="https://github.com/ThingsPanel/thingspanel-ui/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">
-      Copyright © 2024 ThingsPanel
-    </a>
-  </DarkModeContainer>
+  <DarkModeContainer class="h-full flex-center"></DarkModeContainer>
 </template>
 
 <style scoped></style>
