@@ -4,17 +4,10 @@ import { useRoute } from 'vue-router';
 import { useLoading } from '@sa/hooks';
 import { useWebSocket } from '@vueuse/core';
 import Telemetry from '@/views/device/details/modules/telemetry/telemetry.vue';
-import TelemetryChart from '@/views/device/details/modules/telemetry-chart.vue';
-import Join from '@/views/device/details/modules/join.vue';
 import DeviceAnalysis from '@/views/device/details/modules/device-analysis.vue';
-import Message from '@/views/device/details/modules/message.vue';
 import Stats from '@/views/device/details/modules/stats.vue';
 import EventReport from '@/views/device/details/modules/event-report.vue';
 import CommandDelivery from '@/views/device/details/modules/command-delivery.vue';
-import ExpectMessage from '@/views/device/details/modules/expect-message.vue';
-import Automate from '@/views/device/details/modules/automate.vue';
-import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue';
-import User from '@/views/device/details/modules/user.vue';
 import Settings from '@/views/device/details/modules/settings.vue';
 import { $t } from '@/locales';
 import { useAppStore } from '@/store/modules/app';
@@ -37,27 +30,9 @@ let components = [
     refreshKey: 0
   },
   {
-    key: 'chart',
-    name: () => $t('custom.device_details.chart'),
-    component: TelemetryChart,
-    refreshKey: 0
-  },
-  {
-    key: 'join',
-    name: () => $t('custom.device_details.join'),
-    component: Join,
-    refreshKey: 0
-  },
-  {
     key: 'device-analysis',
     name: () => $t('custom.device_details.deviceAnalysis'),
     component: DeviceAnalysis,
-    refreshKey: 0
-  },
-  {
-    key: 'message',
-    name: () => $t('custom.device_details.AdditionalDetails'),
-    component: Message,
     refreshKey: 0
   },
   {
@@ -76,30 +51,6 @@ let components = [
     key: 'command-delivery',
     name: () => $t('custom.device_details.commandDelivery'),
     component: CommandDelivery,
-    refreshKey: 0
-  },
-  {
-    key: 'expect-message',
-    name: () => $t('custom.device_details.expectMessage'),
-    component: ExpectMessage,
-    refreshKey: 0
-  },
-  {
-    key: 'automate',
-    name: () => $t('custom.device_details.automate'),
-    component: Automate,
-    refreshKey: 0
-  },
-  {
-    key: 'give-an-alarm',
-    name: () => $t('custom.device_details.giveAnAlarm'),
-    component: GiveAnAlarm,
-    refreshKey: 0
-  },
-  {
-    key: 'user',
-    name: () => $t('custom.device_details.user'),
-    component: User,
     refreshKey: 0
   },
   {
