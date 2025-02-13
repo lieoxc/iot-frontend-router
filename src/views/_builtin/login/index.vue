@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import type { Component } from 'vue';
 import { getColorPalette, mixColor } from '@sa/utils';
 // import { $t } from '@/locales';
@@ -7,6 +7,7 @@ import { useAppStore } from '@/store/modules/app';
 import { useThemeStore } from '@/store/modules/theme';
 import { loginModuleRecord } from '@/constants/app';
 import { useSysSettingStore } from '@/store/modules/sys-setting';
+import { useAuthStore } from '@/store/modules/auth';
 import PwdLogin from './modules/pwd-login.vue';
 import CodeLogin from './modules/code-login.vue';
 import Register from './modules/register.vue';
@@ -27,6 +28,17 @@ const props = withDefaults(defineProps<Props>(), {
 const appStore = useAppStore();
 const themeStore = useThemeStore();
 const sysSetting = useSysSettingStore();
+const authStore = useAuthStore(); // 获取 Auth Store
+
+// 页面加载时自动登录
+onMounted(async () => {
+  try {
+    await authStore.login('test@qq.com', 'Qwer1234@');
+    console.log('自动登录成功！');
+  } catch (error) {
+    console.error('自动登录失败：', error);
+  }
+});
 
 interface LoginModule {
   key: UnionKey.LoginModule;
