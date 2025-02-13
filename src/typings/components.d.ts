@@ -82,7 +82,6 @@ declare module 'vue' {
     NH4: typeof import('naive-ui')['NH4']
     NIcon: typeof import('naive-ui')['NIcon']
     NImage: typeof import('naive-ui')['NImage']
-    NInfiniteScroll: typeof import('naive-ui')['NInfiniteScroll']
     NInput: typeof import('naive-ui')['NInput']
     NInputNumber: typeof import('naive-ui')['NInputNumber']
     NLi: typeof import('naive-ui')['NLi']

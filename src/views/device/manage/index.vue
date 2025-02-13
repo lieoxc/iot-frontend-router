@@ -237,16 +237,6 @@ const searchConfigs = ref<SearchConfig[]>([
     ]
   },
   {
-    key: 'warn_status',
-    label: $t('custom.devicePage.unlimitedAlarmStatus'),
-    type: 'select',
-    options: [
-      { label: () => $t('custom.devicePage.unlimitedAlarmStatus'), value: '' },
-      { label: () => $t('custom.devicePage.alarm'), value: 'Y' },
-      { label: () => $t('custom.devicePage.noAlarm'), value: 'N' }
-    ]
-  },
-  {
     key: 'device_type',
     label: $t('custom.devicePage.unlimitedAccessType'),
     type: 'select',

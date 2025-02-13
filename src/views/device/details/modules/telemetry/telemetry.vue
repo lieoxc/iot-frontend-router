@@ -9,7 +9,7 @@ import { MovingNumbers } from 'moving-numbers-vue3';
 import moment from 'moment';
 import {
   expectMessageAdd,
-  getSimulation,
+  // getSimulation,
   getTelemetryLogList,
   sendSimulation,
   telemetryDataCurrent,
@@ -53,22 +53,22 @@ const telemetryData = ref<DeviceManagement.telemetryData[]>([]);
 const initTelemetryData = ref<any>();
 const numberAnimationInstRef = ref<NumberAnimationInst[] | []>([]);
 const nowTime = ref<any>();
-const { loading, startLoading, endLoading } = useLoading();
+const { startLoading, endLoading } = useLoading();
 const total = ref(0);
 const showLog = ref(false);
 const device_order = ref('');
-const operationOptions = [
-  { label: $t('custom.device_details.whole'), value: '' },
-  { label: $t('custom.device_details.manualOperation'), value: '1' },
-  { label: $t('custom.device_details.triggerOperation'), value: '2' }
-  // 其他操作类型选项...
-];
-const resultOptions = [
-  { label: $t('custom.device_details.whole'), value: '' },
-  { label: $t('custom.devicePage.success'), value: '1' },
-  { label: $t('custom.devicePage.fail'), value: '2' }
-  // 其他发送结果选项...
-];
+// const operationOptions = [
+//   { label: $t('custom.device_details.whole'), value: '' },
+//   { label: $t('custom.device_details.manualOperation'), value: '1' },
+//   { label: $t('custom.device_details.triggerOperation'), value: '2' }
+//   // 其他操作类型选项...
+// ];
+// const resultOptions = [
+//   { label: $t('custom.device_details.whole'), value: '' },
+//   { label: $t('custom.devicePage.success'), value: '1' },
+//   { label: $t('custom.devicePage.fail'), value: '2' }
+//   // 其他发送结果选项...
+// ];
 const cardHeight = ref(160); // 卡片的高度
 const cardMargin = ref(15); // 卡片的间距
 const log_page = ref(1);
@@ -117,57 +117,57 @@ const { status, send, close } = useWebSocket(wsUrl, {
   }
 });
 
-const columns = [
-  {
-    title: $t('custom.device_details.command'),
-    minWidth: '140px',
-    key: 'data'
-  },
-  {
-    title: $t('custom.device_details.operationType'),
-    key: 'operation_type',
-    minWidth: '140px',
-    render: row => (row.operation_type === '1' ? $t('custom.device_details.manualOperation') : $t('card.triggerAction'))
-  },
-  {
-    title: $t('custom.device_details.operationUsers'),
-    minWidth: '140px',
-    key: 'username',
-    render: row => (row.operation_type === '1' ? row.username : $t('generate.system'))
-  },
-  {
-    title: $t('custom.device_details.operationTime'),
-    key: 'created_at',
-    minWidth: '140px',
-    render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
-  },
-  {
-    title: $t('custom.device_details.sendResults'),
-    minWidth: '140px',
-    key: 'status',
-    render: row => (row.status === '1' ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
-  }
-];
-const requestSimulationList = async () => {
-  const { data, error } = await getSimulation({
-    device_id: props.id
-  });
-  if (!error) {
-    device_order.value = data;
-  }
-};
+// const columns = [
+//   {
+//     title: $t('custom.device_details.command'),
+//     minWidth: '140px',
+//     key: 'data'
+//   },
+//   {
+//     title: $t('custom.device_details.operationType'),
+//     key: 'operation_type',
+//     minWidth: '140px',
+//     render: row => (row.operation_type === '1' ? $t('custom.device_details.manualOperation') : $t('card.triggerAction'))
+//   },
+//   {
+//     title: $t('custom.device_details.operationUsers'),
+//     minWidth: '140px',
+//     key: 'username',
+//     render: row => (row.operation_type === '1' ? row.username : $t('generate.system'))
+//   },
+//   {
+//     title: $t('custom.device_details.operationTime'),
+//     key: 'created_at',
+//     minWidth: '140px',
+//     render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
+//   },
+//   {
+//     title: $t('custom.device_details.sendResults'),
+//     minWidth: '140px',
+//     key: 'status',
+//     render: row => (row.status === '1' ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
+//   }
+// ];
+// const requestSimulationList = async () => {
+//   const { data, error } = await getSimulation({
+//     device_id: props.id
+//   });
+//   if (!error) {
+//     device_order.value = data;
+//   }
+// };
 
-const openDialog = () => {
-  showDialog.value = true;
-  formValue.value = '';
-  form.expected = false;
-  form.time = null;
-};
-const openUpLog = () => {
-  showError.value = false;
-  showLogDialog.value = true;
-  requestSimulationList();
-};
+// const openDialog = () => {
+//   showDialog.value = true;
+//   formValue.value = '';
+//   form.expected = false;
+//   form.time = null;
+// };
+// const openUpLog = () => {
+//   showError.value = false;
+//   showLogDialog.value = true;
+//   requestSimulationList();
+// };
 
 const sendSimulationList = async () => {
   if (!device_order.value) {
@@ -380,13 +380,15 @@ const inputFeedback = computed(() => {
 <template>
   <n-card class="w-full">
     <!-- 第一行 -->
-    <NFlex justify="space-between">
+    <!--
+ <NFlex justify="space-between">
       <n-button type="primary" class="mb-4" @click="openDialog">{{ $t('generate.issue-control') }}</n-button>
 
       <n-button v-if="showLog" type="primary" class="mb-4" @click="openUpLog">
         {{ $t('generate.simulate-report-data') }}
       </n-button>
-    </NFlex>
+    </NFlex> 
+-->
 
     <!-- 自定义控制 -->
     <NGrid x-gap="20" y-gap="20" cols="1 s:2 m:3 l:4" responsive="screen" class="mb-4">
@@ -479,7 +481,8 @@ const inputFeedback = computed(() => {
     </n-card>
 
     <!-- 第三行 -->
-    <n-space>
+    <!--
+ <n-space>
       <n-select
         v-model:value="operationType"
         :options="operationOptions"
@@ -487,12 +490,14 @@ const inputFeedback = computed(() => {
         @update:value="fetchData"
       />
       <n-select v-model:value="sendResult" :options="resultOptions" style="width: 200px" @update:value="fetchData" />
-    </n-space>
+    </n-space> 
+-->
 
     <!-- 第四行 -->
 
-    <n-data-table :loading="loading" class="mt-4" :columns="columns" :data="tableData" :pagination="false" />
-    <div class="mt-4 w-full flex justify-end">
+    <!-- <n-data-table :loading="loading" class="mt-4" :columns="columns" :data="tableData" :pagination="false" /> -->
+    <!--
+ <div class="mt-4 w-full flex justify-end">
       <n-pagination
         :page-count="total"
         :page-size="5"
@@ -503,7 +508,8 @@ const inputFeedback = computed(() => {
           }
         "
       />
-    </div>
+    </div> 
+-->
     <n-modal v-model:show="showLogDialog" :title="$t('generate.report-data')" :class="getPlatform ? 'w-90%' : 'w-40%'">
       <n-card>
         <n-form>

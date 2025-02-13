@@ -9,7 +9,8 @@ export default defineConfig(
       {
         files: ['./scripts/*.ts'],
         rules: {
-          'no-unused-expressions': 'off'
+          'no-unused-vars': 'off' // 完全禁用该规则
+        
         }
       },
       {
@@ -56,6 +57,7 @@ export default defineConfig(
   },
   {
     rules: {
+      'no-unused-vars': 'off', // 完全禁用该规则
       'array-callback-return': 'off',
       'import/order': [
         'error',
