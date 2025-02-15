@@ -1,17 +1,14 @@
 <script setup lang="tsx">
-import { computed, reactive, ref } from 'vue';
+import { provide, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
-import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
+import { NButton, NSpace } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { useBoolean, useLoading } from '@sa/hooks';
+import { useLoading } from '@sa/hooks';
 import dayjs from 'dayjs';
-import { userStatusOptions } from '@/constants/business';
-import { delPackage,fetchPackageList } from '@/service/api/product';
-import { useAuthStore } from '@/store/modules/auth';
+import { fetchPackageList } from '@/service/api/product';
 import { $t } from '@/locales';
 import TableActionDrawer from './components/table-action-drawer.vue';
 
-const authStore = useAuthStore();
 const { loading, startLoading, endLoading } = useLoading(false);
 const showEmpty = ref(false);
 
@@ -85,7 +82,13 @@ const columns: Ref<DataTableColumns<Api.UpdatePackage.Package>> = ref([
     key: 'device_config_id',
     minWidth: '140px',
     title: () => $t('page.product.update-package.deviceConfig'),
-    align: 'left'
+    align: 'left',
+    render: row => {
+      if (row.device_config_id) {
+        return $t(row.device_config_name);
+      }
+      return <span></span>;
+    }
   },
   {
     key: 'package_type',
@@ -131,14 +134,17 @@ const columns: Ref<DataTableColumns<Api.UpdatePackage.Package>> = ref([
 ]) as Ref<DataTableColumns<Api.UpdatePackage.Package>>;
 
 const ota_upgrade_package_id = ref<string | null>(null);
+const dev_config_id = ref<string | null>(null);
 const drawerVisible = ref(false); // 用于控制任务详情抽屉是否展示
 const drawerTitle = ref(''); // 抽屉标题
 
+provide('dev_config_id', dev_config_id);
 
-function handleLookTask(rowId: string) {
+function handleLookTask(rowId: string): void {
   const findItem = tableData.value.find(item => item.id === rowId);
   if (findItem) {
     ota_upgrade_package_id.value = findItem.id;
+    dev_config_id.value = findItem.device_config_id;
   }
   drawerTitle.value = $t('page.product.update-ota.lookTask');
   drawerVisible.value = true;
@@ -147,14 +153,6 @@ function handleLookTask(rowId: string) {
 function handleDrawerSuccess() {
   getTableData(); // 刷新数据
   drawerVisible.value = false; // 关闭抽屉
-}
-
-async function handleDeleteTable(rowId: string) {
-  const data = await delPackage(rowId);
-  if (!data.error) {
-    window.$message?.success($t('common.deleteSuccess'));
-    getTableData();
-  }
 }
 
 function init() {
@@ -186,6 +184,7 @@ init();
           v-model:visible="drawerVisible"
           :title="drawerTitle"
           :ota_upgrade_package_id="ota_upgrade_package_id"
+          :dev_config_id="dev_config_id"
           @success="handleDrawerSuccess"
         />
       </div>

@@ -94,6 +94,26 @@ export const createDeviceColumns = (): DataTableColumns<DeviceManagement.DeviceD
   }
 ];
 
+export const createOtaDeviceColumns = (): DataTableColumns<DeviceManagement.DeviceData> => [
+  {
+    type: 'selection', minWidth:'140px',
+  },
+  {
+    title: () => $t('custom.devicePage.deviceName'),
+    key: 'name', minWidth:'140px',
+    render: row => row.name || '-'
+  },
+  {
+    title: () => $t('custom.devicePage.deviceNumber'),
+    key: 'device_number', minWidth:'140px',
+    render: row => row.device_number || '-'
+  },
+  {
+    title: () => $t('custom.devicePage.currentVersion'), minWidth:'140px',
+    key: 'current_version'
+  }
+];
+
 export const createNoSelectDeviceColumns = (
   viewDevicsseDetails: (rid: string) => void,
   deleteDeviceItem: (rid: string) => void

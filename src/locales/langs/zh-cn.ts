@@ -44,6 +44,7 @@ const local: App.I18n.Schema = {
       deviceKey: 'key验证错误，服务不可用',
       deviceName: '设备名称',
       deviceNumber: '设备编码',
+      currentVersion: '版本号',
       deviceConfig: '设备配置',
       configTemplate: '配置模版',
       unlimitedDeviceConfig: '不限设备模板',

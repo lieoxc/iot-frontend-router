@@ -1,19 +1,16 @@
 <script setup lang="tsx">
-import { defineProps, defineEmits, ref,PropType,reactive,onUpdated} from 'vue';
+import { defineEmits, defineProps, onUpdated, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
-import { fetchUpgradeTaskList,fetchUpgradeTaskDetail } from '@/service/api/product';
-import type {  DataTableColumns,PaginationProps } from 'naive-ui';
-import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
-import { $t } from '@/locales';
+import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import { NButton, NSpace } from 'naive-ui';
 import dayjs from 'dayjs';
-import { useAuthStore } from '@/store/modules/auth';
 import { useBoolean, useLoading } from '@sa/hooks';
-
+import { $t } from '@/locales';
+import { fetchUpgradeTaskDetail, fetchUpgradeTaskList } from '@/service/api/product';
 import TableActionModal from './table-action-modal.vue';
 import type { ModalType } from './table-action-modal.vue';
 
-const authStore = useAuthStore();
-const { loading, startLoading, endLoading } = useLoading(false);
+const { startLoading, endLoading } = useLoading(false);
 const { bool: showModal, setTrue: openModal } = useBoolean();
 
 const showEmpty = ref(false);
@@ -29,20 +26,23 @@ function setModalType(type: ModalType) {
   modalType.value = type;
 }
 
-
 const props = defineProps({
   visible: {
     type: Boolean,
-    required: true,
+    required: true
   },
   title: {
     type: String,
-    default: '',
+    default: ''
   },
   ota_upgrade_package_id: {
     type: String,
-    required: true,
+    required: true
   },
+  dev_config_id: {
+    type: String,
+    required: true
+  }
 });
 
 type QueryFormModel = Pick<Api.UpgradeTask.Task, 'ota_upgrade_package_id'> & {
@@ -82,7 +82,7 @@ type QueryFormModelDetail = Pick<Api.UpgradeDetail.Detail, 'ota_upgrade_task_id'
 };
 
 const queryParamsDetail = reactive<QueryFormModelDetail>({
-  ota_upgrade_task_id: "",
+  ota_upgrade_task_id: '',
   page: 1,
   page_size: 10
 });
@@ -109,12 +109,10 @@ const paginationDetail: PaginationProps = reactive({
 
 const emits = defineEmits(['update:visible', 'success']);
 
-function closeDrawer() {
-  emits('update:visible', false);
-}
-
 async function getTableData() {
   startLoading();
+  console.log('table-action-drawer ota_upgrade_package_id: ', props.ota_upgrade_package_id);
+  console.log('table-action-drawer dev_config_id: ', props.dev_config_id);
   queryParams.ota_upgrade_package_id = props.ota_upgrade_package_id;
   const { data } = await fetchUpgradeTaskList(queryParams);
   if (data) {
@@ -274,13 +272,21 @@ onUpdated(() => {
 </script>
 
 <template>
-  <NDrawer :show="visible" @update:show="(value) => emits('update:visible', value)" placement="right" :width="1500" native-scrollbar>
+  <NDrawer
+    :show="visible"
+    placement="right"
+    :width="1500"
+    native-scrollbar
+    @update:show="value => emits('update:visible', value)"
+  >
     <NDrawerContent :title="title">
       <!-- 操作按钮 -->
       <div class="drawer-header">
         <NSpace justify="space-between" align="center" class="mb-4">
           <div>
-            <NButton type="primary" size="small" @click="handleAddtask"> {{ $t('page.product.update-ota.updateTask') }} </NButton>
+            <NButton type="primary" size="small" @click="handleAddtask">
+              {{ $t('page.product.update-ota.updateTask') }}
+            </NButton>
           </div>
         </NSpace>
       </div>
@@ -296,15 +302,29 @@ onUpdated(() => {
       <div v-else class="empty-state">
         <NEmpty description="无数据" />
       </div>
-      <TableActionModal v-model:showModal="showModal" :type="modalType" />
+      <TableActionModal
+        v-model:showModal="showModal"
+        :type="modalType"
+        :dev_config_id="props.dev_config_id"
+        :ota_upgrade_package_id="props.ota_upgrade_package_id"
+        @success="getTableData"
+      />
     </NDrawerContent>
   </NDrawer>
   <!-- 任务详情抽屉组件 -->
-  <NDrawer :show="taskDetailVisible" @update:show="(value) => taskDetailVisible.value = value" placement="right" :width="900" native-scrollbar>
+  <NDrawer
+    :show="taskDetailVisible"
+    placement="right"
+    :width="900"
+    native-scrollbar
+    @update:show="value => (taskDetailVisible.value = value)"
+  >
     <NDrawerContent :title="$t('page.product.update-ota.taskDetail')">
       <div class="drawer-header">
         <NSpace justify="space-between" align="center" class="mb-4">
-          <NButton type="default" size="small" @click="closeTaskDetailDrawer"> {{ $t('custom.management.close') }}</NButton>
+          <NButton type="default" size="small" @click="closeTaskDetailDrawer">
+            {{ $t('custom.management.close') }}
+          </NButton>
         </NSpace>
       </div>
 
@@ -321,6 +341,5 @@ onUpdated(() => {
         </div>
       </div>
     </NDrawerContent>
-    
   </NDrawer>
 </template>

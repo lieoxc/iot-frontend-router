@@ -1316,6 +1316,7 @@ declare namespace App {
           deviceKey: string;
           deviceName: string;
           deviceNumber: string;
+          currentVersion: string;
           deviceConfig: string;
           configTemplate: string;
           unlimitedDeviceConfig: string;

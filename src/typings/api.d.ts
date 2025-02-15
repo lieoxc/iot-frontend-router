@@ -426,37 +426,36 @@ declare namespace Api {
       total: number;
     }
   }
-/**升级包管理 */
+  /** 升级包管理 */
   namespace UpdatePackage {
     interface Package {
       id: string;
       /** 升级包名称 */
       name: string | null;
-     
+
       /** 升级包版本号 */
       version: string | null;
 
-      /** */
       target_version: string | null;
 
       /** 设备类型 */
       device_config_id: string | null;
-      
+
+      device_config_name: string | null;
 
       module: string | null;
       /** 升级包类型 */
-      package_type: Number;
+      package_type: number;
 
       signature_type: string | null;
 
       additional_info: string | null;
-      
+
       description: string | null;
 
       /** 创建时间 */
       created_at: string | null;
 
-      /** */
       package_url: string | null;
       /** 备注 */
       remark: string | null;
@@ -467,25 +466,25 @@ declare namespace Api {
       total: number;
     }
   }
-  /**升级包管理 */
+  /** 升级包管理 */
   namespace UpgradeTask {
     interface Task {
       /** 任务id */
       id: string;
       /** 任务名称 */
       name: string | null;
-      
+
       ota_upgrade_package_id: string | null;
       /** 设备数量 */
-      device_count: Number;
+      device_count: number;
 
       packageName: string | null;
-       /** 描述信息 */
+      /** 描述信息 */
       description: string | null;
 
       /** 创建时间 */
       created_at: string | null;
-      
+
       remark: string | null;
     }
 
@@ -494,8 +493,8 @@ declare namespace Api {
       total: number;
     }
   }
-   /**升级包管理 */
-   namespace UpgradeDetail {
+  /** 升级包管理 */
+  namespace UpgradeDetail {
     interface Detail {
       /** 设备id */
       id: string;
@@ -503,9 +502,9 @@ declare namespace Api {
       name: string | null;
       /** 任务ID */
       ota_upgrade_task_id: string | null;
-      steps: Number;
+      steps: number;
       /** 状态 */
-      status: Number;
+      status: number;
       /** 设备编号 */
       device_number: string | null;
       /** 描述信息 */

@@ -1,23 +1,19 @@
 <script setup lang="ts">
-import { computed, reactive, ref, toRefs, watch,onUpdated } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import type { FormInst, FormItemRule } from 'naive-ui';
 // import { genderOptions } from '@/constants'
-import { editPackage,addPackage } from '@/service/api/product';
+import { addUpgradeTask } from '@/service/api/product';
 import { createRequiredFormRule } from '@/utils/form/rule';
-import { packageOptions } from '@/constants/business';
-import { getDemoServerUrl, getFileName } from '@/utils/common/tool';
-import { localStg } from '@/utils/storage';
-import type { UploadFileInfo } from 'naive-ui';
 import { $t } from '@/locales';
-const url = ref(new URL(getDemoServerUrl()));
-
-import BatchSelectDeviceModal from './batch-select-device.vue';
+import DeviceSelectList from './device-select-list.vue';
 
 export interface Props {
   /** 弹窗可见性 */
   showModal: boolean;
   /** 弹窗类型 add: 新增 edit: 编辑 */
-  type: 'add' ;
+  type: 'add';
+  dev_config_id: string;
+  ota_upgrade_package_id: string;
 }
 
 export type ModalType = NonNullable<Props['type']>;
@@ -25,16 +21,14 @@ export type ModalType = NonNullable<Props['type']>;
 defineOptions({ name: 'TableActionModal' });
 
 const props = withDefaults(defineProps<Props>(), {
-  type: 'add',
+  type: 'add'
 });
 
 interface Emits {
   (e: 'update:showModal', showModal: boolean): void;
-
+  (e: 'update:modelValue', val: string): void;
   /** 点击协议 */
   (e: 'success'): void;
-  (e: 'update:modelValue', val: string): void;
-  (e: 'success', file: UploadFileInfo): void;
 }
 
 const emit = defineEmits<Emits>();
@@ -60,9 +54,14 @@ const title = computed(() => {
 });
 
 const batchSelectModalVisible = ref(false);
+
 const formRef = ref<HTMLElement & FormInst>();
 
-type FormModel = Pick<Api.UpdatePackage.Package, 'name' |'description'>
+type FormModel = Pick<Api.UpgradeTask.Task, 'name' | 'description' | 'ota_upgrade_package_id'> & {
+  ota_upgrade_package_id: string;
+  device_id_list: string[];
+  remark: string;
+};
 
 const formModel = reactive<FormModel>(createDefaultFormModel());
 
@@ -74,7 +73,9 @@ const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
 function createDefaultFormModel(): FormModel {
   return {
     name: '',
-    description: ""
+    description: '',
+    ota_upgrade_package_id: props.ota_upgrade_package_id,
+    remark: ''
   };
 }
 
@@ -97,14 +98,19 @@ async function handleSubmit() {
   await formRef.value?.validate();
   let data: any;
   if (props.type === 'add') {
-    data = await addPackage(formModel);
+    data = await addUpgradeTask(formModel);
   }
   if (!data.error) {
     emit('success');
   }
   closeModal();
 }
-
+const handleChildChange = (newValue: boolean) => {
+  batchSelectModalVisible.value = newValue;
+};
+const handleSubmitData = (deviceIDList: string[]) => {
+  formModel.device_id_list = deviceIDList;
+};
 function batchSelectDevice() {
   batchSelectModalVisible.value = true;
 }
@@ -117,7 +123,6 @@ watch(
     }
   }
 );
-
 </script>
 
 <template>
@@ -128,7 +133,9 @@ watch(
           <NInput v-model:value="formModel.name" />
         </NFormItemGridItem>
         <NFormItemGridItem :span="12" :label="$t('page.product.update-ota.selectDevice')" path="device_config_id">
-          <NButton class="w-120px" @click="batchSelectDevice">{{ $t('page.product.update-ota.batchSelectDevice') }}</NButton>
+          <NButton class="w-120px" @click="batchSelectDevice">
+            {{ $t('page.product.update-ota.batchSelectDevice') }}
+          </NButton>
         </NFormItemGridItem>
         <NFormItemGridItem :span="24" :label="$t('common.description')">
           <NInput v-model:value="formModel.description" type="textarea" />
@@ -140,7 +147,22 @@ watch(
       </NSpace>
     </NForm>
   </NModal>
-  <BatchSelectDeviceModal v-model:show="batchSelectModalVisible" />
+  <NModal v-model:show="batchSelectModalVisible">
+    <NCard
+      style="width: 800px"
+      :title="$t('custom.grouping_details.addDeviceToGroup')"
+      :bordered="false"
+      size="huge"
+      role="dialog"
+      aria-modal="true"
+    >
+      <DeviceSelectList
+        :dev_config_id="props.dev_config_id"
+        @closed_modal="handleChildChange"
+        @submit_data="handleSubmitData"
+      />
+    </NCard>
+  </NModal>
 </template>
 
 <style scoped></style>
