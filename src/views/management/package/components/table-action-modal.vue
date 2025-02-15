@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { computed, reactive, ref, toRefs, watch } from 'vue';
-import type { FormInst, FormItemRule } from 'naive-ui';
+import { computed, reactive, ref, watch } from 'vue';
+import type { FormInst, FormItemRule, UploadFileInfo } from 'naive-ui';
 // import { genderOptions } from '@/constants'
-import { editPackage,addPackage } from '@/service/api/product';
+import { addPackage, editPackage } from '@/service/api/product';
 import { createRequiredFormRule } from '@/utils/form/rule';
 import { packageOptions } from '@/constants/business';
-import { getDemoServerUrl, getFileName } from '@/utils/common/tool';
+import { getDemoServerUrl } from '@/utils/common/tool';
 import { localStg } from '@/utils/storage';
-import type { UploadFileInfo } from 'naive-ui';
 import { $t } from '@/locales';
 const url = ref(new URL(getDemoServerUrl()));
 
@@ -18,7 +17,10 @@ export interface Props {
   type?: 'add' | 'edit';
   /** 编辑的表格行数据 */
   editData?: Api.UpdatePackage.Package | null;
+  // 定义设备配置选项
+  deviceConfigOptions: Array<{ label: string; value: string }>;
 }
+
 const PackageTypeOptions = computed(() => {
   return packageOptions.map(item => {
     const key = item.value === 1 ? 'page.product.update-package.diff' : 'page.product.update-package.full';
@@ -28,6 +30,7 @@ const PackageTypeOptions = computed(() => {
     };
   });
 });
+
 export type ModalType = NonNullable<Props['type']>;
 
 defineOptions({ name: 'TableActionModal' });
@@ -71,8 +74,19 @@ const title = computed(() => {
 
 const formRef = ref<HTMLElement & FormInst>();
 
-type FormModel = Pick<Api.UpdatePackage.Package, 
-'name' | 'version' | 'device_config_id' | 'module'|'package_type' | 'signature_type'|'additional_info'|'description'|'package_url'| 'remark' >
+type FormModel = Pick<
+  Api.UpdatePackage.Package,
+  | 'name'
+  | 'version'
+  | 'device_config_id'
+  | 'module'
+  | 'package_type'
+  | 'signature_type'
+  | 'additional_info'
+  | 'description'
+  | 'package_url'
+  | 'remark'
+>;
 
 const formModel = reactive<FormModel>(createDefaultFormModel());
 
@@ -88,13 +102,13 @@ function createDefaultFormModel(): FormModel {
     name: '',
     version: '',
     device_config_id: '',
-    module:"",
-    package_type: 2,
-    signature_type: "MD5",
-    additional_info:"{}",
-    description: "",
-    package_url: "www.baidu.com",
-    remark: '',
+    module: '', // 暂时不需要模块名称
+    package_type: 2, // 默认是整包
+    signature_type: 'MD5', // 默认校验方式MD5
+    additional_info: '{}', // 暂时不需要额外信息
+    description: '',
+    package_url: 'www.baidu.com', // 暂时随便填写
+    remark: ''
   };
 }
 
@@ -123,8 +137,7 @@ async function handleSubmit() {
   let data: any;
   if (props.type === 'add') {
     data = await addPackage(formModel);
-  } 
-  else if (props.type === 'edit') {
+  } else if (props.type === 'edit') {
     data = await editPackage(formModel);
   }
   if (!data.error) {
@@ -163,38 +176,55 @@ watch(
   <NModal v-model:show="modalVisible" preset="card" :title="title" class="w-700px">
     <NForm ref="formRef" label-placement="left" :label-width="124" :model="formModel" :rules="rules">
       <NGrid :cols="24" :x-gap="18">
-        <NFormItemGridItem :span="12" :label="$t('page.product.update-package.packageName')" path="name">
-          <NInput v-model:value="formModel.name" />
+        <NFormItemGridItem :span="12" :label="$t('page.product.update-package.type')" path="package_type">
+          <NSelect
+            v-model:value="formModel.package_type"
+            clearable
+            class="w-200px"
+            :options="PackageTypeOptions"
+            :disabled="type === 'edit'"
+          />
         </NFormItemGridItem>
         <NFormItemGridItem :span="12" :label="$t('page.product.update-package.versionCode')" path="version">
           <NInput v-model:value="formModel.version" :disabled="type === 'edit'" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="$t('page.product.update-package.deviceConfig')" path="device_config_id">
-          <NInput v-model:value="formModel.device_config_id" />
+        <NFormItemGridItem :span="12" :label="$t('page.product.update-package.packageName')" path="name">
+          <NInput v-model:value="formModel.name" />
         </NFormItemGridItem>
+        <!-- 设备配置选择框 -->
+        <NFormItemGridItem :span="12" :label="$t('page.product.update-package.deviceConfig')" path="device_config_id">
+          <NSelect
+            v-model:value="formModel.device_config_id"
+            :options="deviceConfigOptions"
+            placeholder="请选择设备配置"
+            clearable
+          />
+        </NFormItemGridItem>
+        <!--
+ <NFormItemGridItem :span="12" :label="$t('page.product.update-package.deviceConfig')" path="device_config_id">
+          <NInput v-model:value="formModel.device_config_id" />
+        </NFormItemGridItem> 
+-->
         <template v-if="type === 'add'">
           <NFormItemGridItem :span="24" :label="$t('page.product.update-package.package')">
-            <n-upload 
-            v-model="formModel.package_url"
-            :action="url + '/file/up'"
-            :headers="{
-                    'x-token': localStg.get('token') || ''
-                  }"
-            :data="{
-              type: 'upgradePackage'
-            }"
-            :accept="accept"
-            :max="1"
-            @finish="handleFinish"
-            @remove="handleRemove"
-            @error="handleError"
+            <n-upload
+              v-model="formModel.package_url"
+              :action="url + '/file/up'"
+              :headers="{
+                'x-token': localStg.get('token') || ''
+              }"
+              :data="{
+                type: 'upgradePackage'
+              }"
+              :accept="accept"
+              :max="1"
+              @finish="handleFinish"
+              @remove="handleRemove"
+              @error="handleError"
             >
               <n-button>上传文件</n-button>
             </n-upload>
-          <!-- <NInput v-model:value="formModel.remark" type="textarea" /> -->
-        </NFormItemGridItem>
-          <NFormItemGridItem :span="12" :label="$t('page.product.update-package.type')" path="package_type">
-            <NSelect v-model:value="formModel.package_type" clearable class="w-200px" :options="PackageTypeOptions" :disabled="type === 'edit'"  />
+            -->
           </NFormItemGridItem>
         </template>
         <NFormItemGridItem :span="24" :label="$t('common.remark')">
