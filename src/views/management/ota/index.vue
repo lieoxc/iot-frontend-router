@@ -7,7 +7,7 @@ import { useLoading } from '@sa/hooks';
 import dayjs from 'dayjs';
 import { fetchPackageList } from '@/service/api/product';
 import { $t } from '@/locales';
-import TableActionDrawer from './components/table-action-drawer.vue';
+import TableActionDrawer from './components/task-drawer-list.vue';
 
 const { loading, startLoading, endLoading } = useLoading(false);
 const showEmpty = ref(false);

@@ -75,7 +75,8 @@ function createDefaultFormModel(): FormModel {
     name: '',
     description: '',
     ota_upgrade_package_id: props.ota_upgrade_package_id,
-    remark: ''
+    remark: '',
+    device_id_list: []
   };
 }
 
@@ -136,6 +137,7 @@ watch(
           <NButton class="w-120px" @click="batchSelectDevice">
             {{ $t('page.product.update-ota.batchSelectDevice') }}
           </NButton>
+          <span class="ml-2 text-gray-500">{{ $t('generate.selected') }} {{ formModel.device_id_list.length }}</span>
         </NFormItemGridItem>
         <NFormItemGridItem :span="24" :label="$t('common.description')">
           <NInput v-model:value="formModel.description" type="textarea" />

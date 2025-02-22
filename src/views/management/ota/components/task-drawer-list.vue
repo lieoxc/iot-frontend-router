@@ -2,22 +2,23 @@
 import { defineEmits, defineProps, onUpdated, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { NButton, NSpace } from 'naive-ui';
+import { NButton, NPopconfirm, NSpace } from 'naive-ui';
 import dayjs from 'dayjs';
 import { useBoolean, useLoading } from '@sa/hooks';
 import { $t } from '@/locales';
-import { fetchUpgradeTaskDetail, fetchUpgradeTaskList } from '@/service/api/product';
-import TableActionModal from './table-action-modal.vue';
-import type { ModalType } from './table-action-modal.vue';
-
+import { delUpgradeTask, fetchUpgradeTaskList } from '@/service/api/product';
+import TableActionModal from './task-add-modal.vue';
+import DeviceDetailModal from './task-detail-modal.vue';
+import type { ModalType } from './task-add-modal.vue';
 const { startLoading, endLoading } = useLoading(false);
 const { bool: showModal, setTrue: openModal } = useBoolean();
 
 const showEmpty = ref(false);
 const tableData = ref<Api.UpgradeTask.Task[]>([]);
-const DetailData = ref<Api.UpgradeDetail.Detail[]>([]);
-const taskDetailVisible = ref(false); // 控制任务详情抽屉的显示
 
+const taskDetailVisible = ref(false); // 控制任务详情抽屉的显示
+const taskDetailTitle = ref(''); // 任务详情标题
+const ota_upgrade_task_id = ref(''); // 任务id
 defineOptions({ name: 'TableActionDrawer' });
 
 const modalType = ref<ModalType>('add');
@@ -76,43 +77,10 @@ const pagination: PaginationProps = reactive({
   }
 });
 
-type QueryFormModelDetail = Pick<Api.UpgradeDetail.Detail, 'ota_upgrade_task_id'> & {
-  page: number;
-  page_size: number;
-};
-
-const queryParamsDetail = reactive<QueryFormModelDetail>({
-  ota_upgrade_task_id: '',
-  page: 1,
-  page_size: 10
-});
-
-const paginationDetail: PaginationProps = reactive({
-  page: 1,
-  pageSize: 10,
-  showSizePicker: true,
-  itemCount: 0,
-  pageSizes: [10, 15, 20, 25, 30],
-  onChange: (page: number) => {
-    pagination.page = page;
-    queryParams.page = page;
-    getDetailTableData();
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
-    queryParams.page = 1;
-    queryParams.page_size = pageSize;
-    getDetailTableData();
-  }
-});
-
 const emits = defineEmits(['update:visible', 'success']);
 
 async function getTableData() {
   startLoading();
-  console.log('table-action-drawer ota_upgrade_package_id: ', props.ota_upgrade_package_id);
-  console.log('table-action-drawer dev_config_id: ', props.dev_config_id);
   queryParams.ota_upgrade_package_id = props.ota_upgrade_package_id;
   const { data } = await fetchUpgradeTaskList(queryParams);
   if (data) {
@@ -132,24 +100,14 @@ function setTableData(data: Api.UpgradeTask.Task[]) {
   }
 }
 
-async function getDetailTableData() {
-  startLoading();
-  const { data } = await fetchUpgradeTaskDetail(queryParamsDetail);
-  if (data) {
-    const list: Api.UpgradeDetail.Detail[] = data.list;
-    pagination.itemCount = data.total;
-    setDetailTableData(list);
-  }
-  endLoading();
-}
-function setDetailTableData(data: Api.UpgradeDetail.Detail[]) {
-  if (data === null) {
-    showEmpty.value = true;
-  } else {
-    showEmpty.value = false;
-    DetailData.value = data;
+async function handleDeleteTask(rowId: string) {
+  const data = await delUpgradeTask(rowId);
+  if (!data.error) {
+    window.$message?.success($t('common.deleteSuccess'));
+    getTableData();
   }
 }
+
 const columns: Ref<DataTableColumns<Api.UpgradeTask.Task>> = ref([
   {
     key: 'name',
@@ -187,57 +145,25 @@ const columns: Ref<DataTableColumns<Api.UpgradeTask.Task>> = ref([
           <NButton type="primary" size={'small'} onClick={() => handleTaskDetail(row.id)}>
             {$t('page.product.update-ota.taskDetail')}
           </NButton>
+          <NPopconfirm
+            negative-text={$t('common.cancel')}
+            positive-text={$t('common.confirm')}
+            onPositiveClick={() => handleDeleteTask(row.id)}
+          >
+            {{
+              default: () => $t('common.confirm'),
+              trigger: () => (
+                <NButton type="error" size={'small'}>
+                  {$t('common.delete')}
+                </NButton>
+              )
+            }}
+          </NPopconfirm>
         </NSpace>
       );
     }
   }
 ]) as Ref<DataTableColumns<Api.UpgradeTask.Task>>;
-
-const columnsDetail: Ref<DataTableColumns<Api.UpgradeDetail.Detail>> = ref([
-  {
-    key: 'name',
-    minWidth: '120px',
-    title: () => $t('page.product.update-ota.deviceName'),
-    align: 'left'
-  },
-  {
-    key: 'current_version',
-    minWidth: '120px',
-    title: () => $t('page.product.update-ota.currentVersion'),
-    align: 'left'
-  },
-  {
-    key: 'version',
-    minWidth: '120px',
-    title: () => $t('page.product.update-ota.targetVersion'),
-    align: 'left'
-  },
-  {
-    key: 'steps',
-    minWidth: '120px',
-    title: () => $t('page.product.update-ota.progress'),
-    align: 'left'
-  },
-  {
-    key: 'updated_at',
-    minWidth: '120px',
-    title: () => $t('page.product.update-ota.updateTime'),
-    align: 'left',
-    render: row => dayjs(row.updated_at).format('YYYY-MM-DD HH:mm:ss')
-  },
-  {
-    key: 'status',
-    minWidth: '120px',
-    title: () => $t('page.product.update-ota.statusTask'),
-    align: 'left'
-  },
-  {
-    key: 'status_description',
-    minWidth: '120px',
-    title: () => $t('page.product.update-ota.statusDetail'),
-    align: 'left'
-  }
-]) as Ref<DataTableColumns<Api.UpgradeDetail.Detail>>;
 
 function closeTaskDetailDrawer() {
   taskDetailVisible.value = false; // 关闭任务详情抽屉
@@ -247,15 +173,10 @@ async function handleTaskDetail(rowId: string) {
   startLoading();
   const findItem = tableData.value.find(item => item.id === rowId);
   if (findItem) {
-    console.log('Drawer rowId:', rowId);
-    queryParamsDetail.ota_upgrade_task_id = rowId;
-    const { data } = await fetchUpgradeTaskDetail(queryParamsDetail);
-    if (data) {
-      const list: Api.UpgradeDetail.Detail[] = data.list;
-      pagination.itemCount = data.total;
-      setDetailTableData(list);
-    }
+    console.log('handleTaskDetail rowId:', rowId);
     taskDetailVisible.value = true; // 显示任务详情抽屉
+    ota_upgrade_task_id.value = rowId;
+    taskDetailTitle.value = $t('page.product.update-ota.taskDetail');
   }
   endLoading();
 }
@@ -311,35 +232,11 @@ onUpdated(() => {
       />
     </NDrawerContent>
   </NDrawer>
-  <!-- 任务详情抽屉组件 -->
-  <NDrawer
+  <!-- 任务详情弹窗-->
+  <DeviceDetailModal
     :show="taskDetailVisible"
-    placement="right"
-    :width="900"
-    native-scrollbar
-    @update:show="value => (taskDetailVisible.value = value)"
-  >
-    <NDrawerContent :title="$t('page.product.update-ota.taskDetail')">
-      <div class="drawer-header">
-        <NSpace justify="space-between" align="center" class="mb-4">
-          <NButton type="default" size="small" @click="closeTaskDetailDrawer">
-            {{ $t('custom.management.close') }}
-          </NButton>
-        </NSpace>
-      </div>
-
-      <div>
-        <NDataTable
-          v-if="DetailData.length > 0"
-          :columns="columnsDetail"
-          :data="DetailData"
-          :bordered="false"
-          :pagination="paginationDetail"
-        />
-        <div v-else class="empty-state">
-          <NEmpty description="无数据" />
-        </div>
-      </div>
-    </NDrawerContent>
-  </NDrawer>
+    :title="taskDetailTitle"
+    :ota_upgrade_task_id="ota_upgrade_task_id"
+    @update:show="closeTaskDetailDrawer"
+  />
 </template>

@@ -38,6 +38,11 @@ export const addUpgradeTask = async (params: any) => {
   return data;
 };
 
+export const delUpgradeTask = async (id: string) => {
+  const data = await request.delete<Api.UpdatePackage.Data>(`/ota/task/${id}`);
+  return data;
+};
+
 export const fetchUpgradeTaskDetail = async (params: any) => {
   const data = await request.get<Api.UpgradeDetail.Data | null>('/ota/task/detail', {
     params

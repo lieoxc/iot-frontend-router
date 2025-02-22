@@ -200,11 +200,6 @@ watch(
             clearable
           />
         </NFormItemGridItem>
-        <!--
- <NFormItemGridItem :span="12" :label="$t('page.product.update-package.deviceConfig')" path="device_config_id">
-          <NInput v-model:value="formModel.device_config_id" />
-        </NFormItemGridItem> 
--->
         <template v-if="type === 'add'">
           <NFormItemGridItem :span="24" :label="$t('page.product.update-package.package')">
             <n-upload

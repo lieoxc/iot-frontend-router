@@ -18,7 +18,11 @@ const props = defineProps({
 const data = ref<DeviceManagement.DeviceData[]>([]);
 const checkedRowKeysRef = ref<DataTableRowKey[]>([]);
 
-const queryParams = reactive<{ page: number; page_size: number; device_config_id: string }>({
+const queryParams = reactive<{
+  page: number;
+  page_size: number;
+  device_config_id: string;
+}>({
   page: 1,
   page_size: 10,
   device_config_id: props.dev_config_id
