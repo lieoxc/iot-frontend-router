@@ -157,6 +157,7 @@ const local: App.I18n.Schema = {
     as: 'as',
     param: 'param',
     singleClassDevice: 'Single Class Device',
+    multiDevicesInClass: 'Multi Devices In Class',
     singleDevice: 'Single Device',
     triggerService: 'Trigger Service',
     triggerAlarm: 'Trigger Alarm',

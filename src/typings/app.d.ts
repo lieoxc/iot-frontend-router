@@ -405,6 +405,7 @@ declare namespace App {
         as: string;
         param: string;
         singleClassDevice: string;
+        multiDevicesInClass: string;
         singleDevice: string;
         triggerService: string;
         triggerAlarm: string;

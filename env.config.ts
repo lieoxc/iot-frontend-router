@@ -8,7 +8,7 @@ export function createServiceConfig(env: Env.ImportMeta) {
   // const devURL = 'http://47.92.253.145:9999/api/v1';
   // const devURL = '  http://47.115.210.16:8080/api/v1';
   // const devURL = 'http://c.thingspanel.cn/api/v1';
-  const devURL = 'http://127.0.0.1:9999/api/v1';
+  const devURL = 'http://192.168.10.1:9999/api/v1';
 
   const testURL = '';
   const prodURL = '';

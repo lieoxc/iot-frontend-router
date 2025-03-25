@@ -66,7 +66,13 @@ const configFormRules = ref({
   action_target: {
     required: true,
     message: $t('common.select'),
-    trigger: 'change'
+    trigger: 'change',
+    validator: (value: any) => {
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+      return Boolean(value);
+    }
   },
   action_param_type: {
     required: true,
@@ -93,18 +99,6 @@ const actionOptions = ref([
     value: '1',
     disabled: false
   }
-  // {
-  //   label: $t('common.activateScene'),
-  //   value: '20'
-  // },
-  // {
-  //   label: $t('common.triggerAlarm'),
-  //   value: '30'
-  // },
-  // {
-  //   label: $t('common.triggerService'),
-  //   value: '40'
-  // }
 ]);
 
 // 动作选择action值改变时
@@ -130,7 +124,7 @@ const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) =>
 // 设备类型选项
 const actionTypeOptions = ref([
   {
-    label: $t('common.singleDevice'),
+    label: $t('common.multiDevicesInClass'),
     value: '10'
   },
   {
@@ -141,7 +135,7 @@ const actionTypeOptions = ref([
 
 // 选择设备类型
 const actionTypeChange = (instructItem: any, data: any) => {
-  instructItem.action_target = null;
+  instructItem.action_target = [];
   instructItem.action_param_type = null;
   instructItem.action_param = null;
   instructItem.action_param_key = null;
@@ -217,8 +211,14 @@ const actionTargetChange = (instructItem: any) => {
 // 下拉获取的动作标识符
 const actionParamShow = async (instructItem: any) => {
   let res = null as any;
+  console.log('当前 instructItem 原始数据:', JSON.parse(JSON.stringify(instructItem)));
   if (instructItem.action_type === '10') {
-    res = await deviceMetricsMenu({ device_id: instructItem.action_target });
+    // 获取第一个设备的度量菜单作为参考
+    const firstDeviceId = Array.isArray(instructItem.action_target)
+      ? instructItem.action_target[0]
+      : instructItem.action_target;
+    res = await deviceMetricsMenu({ device_id: firstDeviceId });
+    console.log('deviceMetricsMenu res', JSON.parse(JSON.stringify(res)));
   } else if (instructItem.action_type === '11') {
     res = await deviceConfigMetricsMenu({
       device_config_id: instructItem.action_target
@@ -246,6 +246,7 @@ const actionParamShow = async (instructItem: any) => {
         value: item.value
       };
     });
+    console.log('action_param_type：', instructItem.action_param_type);
     if (instructItem.action_param_type) {
       instructItem.actionParamOptions =
         instructItem.actionParamOptionsData.find(item => item.data_source_type === instructItem.action_param_type)
@@ -259,13 +260,18 @@ const actionParamShow = async (instructItem: any) => {
       } else {
         instructItem.showSubSelect = true;
       }
+      console.log('showSubSelect', instructItem.showSubSelect);
     }
+    console.log('action_param', instructItem.action_param);
+    console.log('actionParamOptions length', instructItem.actionParamOptions.length);
     if (instructItem.action_param && instructItem.actionParamOptions.length > 0) {
       instructItem.actionParamData =
         instructItem.actionParamOptions.find(item => item.key === instructItem.action_param) || null;
       if (instructItem.actionParamData.data_type) {
         instructItem.actionParamData.data_type = instructItem.actionParamData.data_type.toLowerCase();
       }
+      console.log('instructItem.actionParamData', instructItem.actionParamData);
+      console.log('instructItem.actionParamData.data_type', instructItem.actionParamData.data_type);
     }
   }
 };
@@ -328,13 +334,6 @@ const actionValueChange = (instructItem: any) => {
     }
   }
 };
-// // 选择动作标识符
-// const actionParamChange = (instructItem: any, pathValues: any) => {
-//   instructItem.action_param_type = pathValues[0].value;
-//   instructItem.action_param = pathValues[1].key;
-//   // instructItem.action_param_type = pathValues[0].value;
-//   instructItem.action_value = null;
-// };
 
 // 场景列表
 const sceneList = ref([]);
@@ -371,27 +370,17 @@ const getAlarmList = async (name: string) => {
 
 // 操作设备类型的数据Item
 const instructListItem = ref({
-  action_target: null, //  动作目标id  设备id、设备配置id，场景id、告警id
-  action_type: null, // 动作标识符类型
-  action_param_type: null, // 动作标识符类型
-  action_param: null, // 动作标识符类型
+  action_target: [], // 修改为数组，支持多选
+  action_type: null,
+  action_param_type: null,
+  action_param: null,
   action_param_key: null,
-  action_value: null, // 参数值
-  deviceGroupId: null, // 设备分组ID
-  actionParamOptions: [], // 动作标识属性下拉列表数据选项
-  actionParamOptionsData: [], // 动作标识菜单下拉列表数据选项
-  actionParamTypeOptions: [] // 动作标识类型下拉列表
+  action_value: null,
+  deviceGroupId: null,
+  actionParamOptions: [],
+  actionParamOptionsData: [],
+  actionParamTypeOptions: []
 });
-
-// interface ActionInstructItem {
-//   action_target: string;
-//   action_type: string;
-//   action_param_type: string;
-//   action_param: string; // 动作标识符类型
-//   action_value: string; // 参数值
-//   deviceGroupId: string;
-//   actionParamType: object | any;
-// }
 
 // 动作数组的item
 const actionItem = ref({
@@ -400,15 +389,6 @@ const actionItem = ref({
   action_target: null, // 动作目标id   设备id、设备配置id，场景id、告警id
   actionInstructList: []
 });
-// interface ActionItem {
-//   actionType: string;
-//   action_type: string;
-//   action_target: string;
-//   actionInstructList: Array<ActionInstructItem>;
-// }
-
-// 动作数组的值
-// let actionGroups: Array<ActionItem> = reactive([] as any);
 
 // 新增一个动作组
 const addActionGroupItem = async () => {
@@ -426,9 +406,6 @@ const deleteActionGroupItem = (actionGroupIndex: any) => {
 
 // 给某个动作组中增加指令
 const addIfGroupsSubItem = async (actionGroupIndex: any) => {
-  // if (configForm.value.actions[actionGroupIndex].actionInstructList.length != 0) {
-  //   await configFormRef.value?.validate();
-  // }
   configForm.value.actions[actionGroupIndex].actionInstructList.push(
     JSON.parse(JSON.stringify(instructListItem.value))
   );
@@ -443,35 +420,34 @@ const tabStore = useTabStore();
 const submitData = async () => {
   await configFormRef.value?.validate();
   const actionsData = [] as any;
-  // eslint-disable-next-line array-callback-return
   configForm.value.actions.map((item: any) => {
     if (item.actionType === '1') {
-      // eslint-disable-next-line array-callback-return
       item.actionInstructList.map((instructItem: any) => {
-        // 如果是c_telemetry/c_attribute,那么action_value示例格式：{"c_telemetry":2}
-        // 如果是c_command,那么action_value示例格式：{"method":"switch1","params":{"false":0}}
-        if (
-          instructItem.action_param_type === 'c_telemetry' ||
-          instructItem.action_param_type === 'c_attribute' ||
-          instructItem.action_param_type === 'c_command'
-        ) {
-          instructItem.action_value = instructItem.actionValue;
+        // 处理多个设备
+        if (Array.isArray(instructItem.action_target)) {
+          instructItem.action_target.forEach(deviceId => {
+            const newAction = { ...instructItem, action_target: deviceId };
+            // 处理不同类型的action_value
+            if (instructItem.action_param_type === 'telemetry' || instructItem.action_param_type === 'attributes') {
+              const action_value = {};
+              action_value[instructItem.action_param] = instructItem.actionValue;
+              newAction.action_value = JSON.stringify(action_value);
+            } else if (instructItem.action_param_type === 'command') {
+              const action_value = {
+                method: instructItem.action_param,
+                params: JSON.parse(instructItem.actionValue)
+              };
+              newAction.action_value = JSON.stringify(action_value);
+            } else if (
+              instructItem.action_param_type === 'c_telemetry' ||
+              instructItem.action_param_type === 'c_attribute' ||
+              instructItem.action_param_type === 'c_command'
+            ) {
+              newAction.action_value = instructItem.actionValue;
+            }
+            actionsData.push(newAction);
+          });
         }
-        // 如果是telemetry/attribute，那么 action_value示例格式：{"humidity":2}
-        if (instructItem.action_param_type === 'telemetry' || instructItem.action_param_type === 'attributes') {
-          const action_value = {};
-          action_value[instructItem.action_param] = instructItem.actionValue;
-          instructItem.action_value = JSON.stringify(action_value);
-        }
-        // 如果是command/c_command，那么 action_value示例格式:	{"method":"ReSet","params":{"switch":1,"light":"close"}}
-        if (instructItem.action_param_type === 'command') {
-          const action_value = {
-            method: instructItem.action_param,
-            params: JSON.stringify(JSON.parse(instructItem.actionValue))
-          };
-          instructItem.action_value = JSON.stringify(action_value);
-        }
-        actionsData.push(instructItem);
       });
     } else {
       item.action_type = item.actionType;
@@ -512,40 +488,37 @@ const getSceneInfo = async () => {
   dataEcho(configForm.value.actions);
 };
 
-// 处理页面回去回显
 const dataEcho = actionsData => {
   const actionGroupsData = [] as any;
   const actionInstructList = [] as any;
-  // eslint-disable-next-line array-callback-return
+
+  // 使用一个Map来合并相同动作配置的设备
+  const actionMap = new Map();
   actionsData.map((item: any) => {
     if (item.action_type === '10' || item.action_type === '11') {
       item.actionParamOptions = [];
       const actionValueObj = JSON.parse(item.action_value);
-      if (
-        item.action_param_type === 'c_telemetry' ||
-        item.action_param_type === 'c_attribute' ||
-        item.action_param_type === 'c_command'
-      ) {
-        item.actionValue = item.action_value;
-      }
-      // 如果是telemetry/attribute，那么 action_value示例格式：{"humidity":2}
-      if (item.action_param_type === 'telemetry' || item.action_param_type === 'attributes') {
-        // item.action_value = JSON.stringify(action_value);
-        item.actionValue = actionValueObj[item.action_param];
-      }
-      // 如果是command/c_command，那么 action_value示例格式:	{"method":"ReSet","params":{"switch":1,"light":"close"}}
       if (item.action_param_type === 'command') {
-        item.actionValue = actionValueObj.params;
+        item.actionValue = JSON.stringify(actionValueObj.params);
       }
-      item.actionParamOptions = [];
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      actionParamShow(item);
-      actionInstructList.push(item);
+      console.log('item.actionValue', item.actionValue);
+      const key = `${item.action_param_type}-${item.action_param}-${item.action_value}`;
+      if (!actionMap.has(key)) {
+        actionMap.set(key, { ...item, action_target: [item.action_target] });
+      } else {
+        actionMap.get(key).action_target.push(item.action_target); // 如果存在则把设备id 添加到action_target数组
+      }
     } else {
       item.actionType = item.action_type;
       actionGroupsData.push(item);
     }
   });
+  // 将合并后的数据添加到actionInstructList
+  actionMap.forEach(value => {
+    actionParamShow(value);
+    actionInstructList.push(value);
+  });
+
   if (actionInstructList.length > 0) {
     const type1Data = {
       actionType: '1',
@@ -615,7 +588,7 @@ onMounted(() => {
                 />
               </NFormItem>
               <template v-if="actionGroupItem.actionType === '1'">
-                <!--          执行动作是操作设备->添加指令--->
+                <!-- 执行动作是操作设备->添加指令 -->
                 <NCard class="flex-1">
                   <NFlex
                     v-for="(instructItem, instructIndex) in actionGroupItem.actionInstructList"
@@ -641,7 +614,7 @@ onMounted(() => {
                         :show-feedback="false"
                         :path="`actions[${actionGroupIndex}].actionInstructList[${instructIndex}].action_target`"
                         :rule="configFormRules.action_target"
-                        class="max-w-40 w-full"
+                        class="max-w-50 w-full"
                       >
                         <NSelect
                           v-model:value="instructItem.action_target"
@@ -650,6 +623,7 @@ onMounted(() => {
                           label-field="name"
                           :consistent-menu-width="false"
                           :loading="loadingSelect"
+                          multiple
                           @update:value="() => actionTargetChange(instructItem)"
                         >
                           <template #header>
@@ -718,17 +692,6 @@ onMounted(() => {
                           class="max-w-40"
                           @update:value="data => actionParamTypeChange(instructItem, data)"
                         />
-                        <!--                        <NCascader-->
-                        <!--                          v-model:value="instructItem.action_param_key"-->
-                        <!--                          :placeholder="$t('common.select')"-->
-                        <!--                          :options="instructItem.actionParamType"-->
-                        <!--                          check-strategy="child"-->
-                        <!--                          children-field="options"-->
-                        <!--                          size="small"-->
-                        <!--                          class="max-w-40"-->
-                        <!--                          @update:show="data => actionParamShow(instructItem, data)"-->
-                        <!--                          @update:value="(value, option, pathValues) => actionParamChange(instructItem, pathValues)"-->
-                        <!--                        />-->
                       </NFormItem>
                       <NFormItem
                         v-if="instructItem.showSubSelect"

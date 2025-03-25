@@ -375,6 +375,7 @@ const local: App.I18n.Schema = {
     as: '如',
     param: '参数',
     singleClassDevice: '单类设备',
+    multiDevicesInClass: '多个设备',
     singleDevice: '单个设备',
     triggerService: '触发服务',
     triggerAlarm: '触发告警',
