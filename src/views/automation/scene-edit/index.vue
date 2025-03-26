@@ -370,16 +370,16 @@ const getAlarmList = async (name: string) => {
 
 // 操作设备类型的数据Item
 const instructListItem = ref({
-  action_target: [], // 修改为数组，支持多选
-  action_type: null,
-  action_param_type: null,
-  action_param: null,
+  action_target: [], // 修改为数组，支持多选 动作目标id  设备id、设备配置id，场景id、告警id
+  action_type: null, // 动作标识符类型
+  action_param_type: null, // 动作标识符类型
+  action_param: null, // 动作标识符类型
   action_param_key: null,
-  action_value: null,
-  deviceGroupId: null,
-  actionParamOptions: [],
-  actionParamOptionsData: [],
-  actionParamTypeOptions: []
+  action_value: null, // 参数值
+  deviceGroupId: null, // 设备分组ID
+  actionParamOptions: [], // 动作标识属性下拉列表数据选项
+  actionParamOptionsData: [], // 动作标识菜单下拉列表数据选项
+  actionParamTypeOptions: [] // 动作标识类型下拉列表
 });
 
 // 动作数组的item
@@ -495,7 +495,8 @@ const dataEcho = actionsData => {
   // 使用一个Map来合并相同动作配置的设备
   const actionMap = new Map();
   actionsData.map((item: any) => {
-    if (item.action_type === '10' || item.action_type === '11') {
+    // 一个或者多个设备
+    if (item.action_type === '10') {
       item.actionParamOptions = [];
       const actionValueObj = JSON.parse(item.action_value);
       if (item.action_param_type === 'command') {
@@ -505,18 +506,49 @@ const dataEcho = actionsData => {
       const key = `${item.action_param_type}-${item.action_param}-${item.action_value}`;
       if (!actionMap.has(key)) {
         actionMap.set(key, { ...item, action_target: [item.action_target] });
+        item.action_target = [item.action_target];
+        actionParamShow(item);
+        actionInstructList.push(item);
       } else {
-        actionMap.get(key).action_target.push(item.action_target); // 如果存在则把设备id 添加到action_target数组
+        // 找到 actionInstructList 中对应的 item 并更新其 action_target
+        const existingItem = actionInstructList.find(
+          listItem =>
+            listItem.action_param_type === item.action_param_type &&
+            listItem.action_param === item.action_param &&
+            listItem.action_value === item.action_value
+        );
+        if (existingItem) {
+          existingItem.action_target.push(item.action_target);
+        }
       }
+    } else if (item.action_type === '11') {
+      // 单个类型
+      item.actionParamOptions = [];
+      const actionValueObj = JSON.parse(item.action_value);
+      if (
+        item.action_param_type === 'c_telemetry' ||
+        item.action_param_type === 'c_attribute' ||
+        item.action_param_type === 'c_command'
+      ) {
+        item.actionValue = item.action_value;
+      }
+      // 如果是telemetry/attribute，那么 action_value示例格式：{"humidity":2}
+      if (item.action_param_type === 'telemetry' || item.action_param_type === 'attributes') {
+        // item.action_value = JSON.stringify(action_value);
+        item.actionValue = actionValueObj[item.action_param];
+      }
+      // 如果是command/c_command，那么 action_value示例格式:	{"method":"ReSet","params":{"switch":1,"light":"close"}}
+      if (item.action_param_type === 'command') {
+        item.actionValue = actionValueObj.params;
+      }
+      item.actionParamOptions = [];
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      actionParamShow(item);
+      actionInstructList.push(item);
     } else {
       item.actionType = item.action_type;
       actionGroupsData.push(item);
     }
-  });
-  // 将合并后的数据添加到actionInstructList
-  actionMap.forEach(value => {
-    actionParamShow(value);
-    actionInstructList.push(value);
   });
 
   if (actionInstructList.length > 0) {
@@ -527,6 +559,7 @@ const dataEcho = actionsData => {
     actionGroupsData.push(type1Data);
   }
   configForm.value.actions = actionGroupsData;
+  console.log('configForm.value.actions', configForm.value.actions);
 };
 
 onMounted(() => {
