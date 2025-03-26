@@ -211,14 +211,12 @@ const actionTargetChange = (instructItem: any) => {
 // 下拉获取的动作标识符
 const actionParamShow = async (instructItem: any) => {
   let res = null as any;
-  console.log('当前 instructItem 原始数据:', JSON.parse(JSON.stringify(instructItem)));
   if (instructItem.action_type === '10') {
     // 获取第一个设备的度量菜单作为参考
     const firstDeviceId = Array.isArray(instructItem.action_target)
       ? instructItem.action_target[0]
       : instructItem.action_target;
     res = await deviceMetricsMenu({ device_id: firstDeviceId });
-    console.log('deviceMetricsMenu res', JSON.parse(JSON.stringify(res)));
   } else if (instructItem.action_type === '11') {
     res = await deviceConfigMetricsMenu({
       device_config_id: instructItem.action_target
@@ -246,7 +244,6 @@ const actionParamShow = async (instructItem: any) => {
         value: item.value
       };
     });
-    console.log('action_param_type：', instructItem.action_param_type);
     if (instructItem.action_param_type) {
       instructItem.actionParamOptions =
         instructItem.actionParamOptionsData.find(item => item.data_source_type === instructItem.action_param_type)
@@ -260,18 +257,13 @@ const actionParamShow = async (instructItem: any) => {
       } else {
         instructItem.showSubSelect = true;
       }
-      console.log('showSubSelect', instructItem.showSubSelect);
     }
-    console.log('action_param', instructItem.action_param);
-    console.log('actionParamOptions length', instructItem.actionParamOptions.length);
     if (instructItem.action_param && instructItem.actionParamOptions.length > 0) {
       instructItem.actionParamData =
         instructItem.actionParamOptions.find(item => item.key === instructItem.action_param) || null;
       if (instructItem.actionParamData.data_type) {
         instructItem.actionParamData.data_type = instructItem.actionParamData.data_type.toLowerCase();
       }
-      console.log('instructItem.actionParamData', instructItem.actionParamData);
-      console.log('instructItem.actionParamData.data_type', instructItem.actionParamData.data_type);
     }
   }
 };
@@ -502,7 +494,6 @@ const dataEcho = actionsData => {
       if (item.action_param_type === 'command') {
         item.actionValue = JSON.stringify(actionValueObj.params);
       }
-      console.log('item.actionValue', item.actionValue);
       const key = `${item.action_param_type}-${item.action_param}-${item.action_value}`;
       if (!actionMap.has(key)) {
         actionMap.set(key, { ...item, action_target: [item.action_target] });
@@ -559,7 +550,6 @@ const dataEcho = actionsData => {
     actionGroupsData.push(type1Data);
   }
   configForm.value.actions = actionGroupsData;
-  console.log('configForm.value.actions', configForm.value.actions);
 };
 
 onMounted(() => {
