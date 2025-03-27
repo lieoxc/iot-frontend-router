@@ -19,6 +19,7 @@ import {
 // import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales';
 import { useTabStore } from '@/store/modules/tab';
+import ActionValueInput from './components/ActionValueInput.vue';
 // eslint-disable-next-line import/no-duplicates
 const route = useRoute();
 const router = useRouter();
@@ -232,7 +233,7 @@ const actionParamShow = async (instructItem: any) => {
       // eslint-disable-next-line array-callback-return
       item.options.map((subItem: any) => {
         subItem.value = subItem.key;
-        subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`;
+        subItem.label = `${subItem.label ? `${subItem.label}` : ''}`;
       });
     });
     // eslint-disable-next-line require-atomic-updates
@@ -552,6 +553,50 @@ const dataEcho = actionsData => {
   configForm.value.actions = actionGroupsData;
 };
 
+// 在 setup 中添加新的响应式变量
+const showActionValueInput = ref(false);
+const currentInstructItem = ref(null);
+
+interface ActionParamChangeParams {
+  instructItem: any;
+  data: any;
+  actionGroupIndex: number;
+  instructIndex: number;
+}
+
+const handleActionParamChange = ({ instructItem, data, actionGroupIndex, instructIndex }: ActionParamChangeParams) => {
+  actionParamChange(instructItem, data);
+  console.log('instructItem:', instructItem);
+  console.log('actionParamOptions:', instructItem.actionParamOptions);
+  // 找到当前选中的选项
+  const selectedOption = instructItem.actionParamOptions.find((option: any) => option.key === data);
+  console.log('selectedOption:', selectedOption);
+
+  // 获取第一个设备ID
+  const deviceId = Array.isArray(instructItem.action_target)
+    ? instructItem.action_target[0]
+    : instructItem.action_target;
+
+  currentInstructItem.value = {
+    ...instructItem,
+    selectedOption: selectedOption || null,
+    actionGroupIndex,
+    instructIndex,
+    deviceId
+  };
+  showActionValueInput.value = true;
+};
+
+const handleActionValueConfirm = (value: string) => {
+  if (currentInstructItem.value) {
+    // 找到对应的 instructItem 并更新
+    const { actionGroupIndex, instructIndex } = currentInstructItem.value;
+    const instructItem = configForm.value.actions[actionGroupIndex].actionInstructList[instructIndex];
+    instructItem.actionValue = value;
+    actionValueChange(instructItem);
+  }
+};
+
 onMounted(() => {
   getGroup();
   getDevice(null, null);
@@ -707,12 +752,12 @@ onMounted(() => {
                         :show-feedback="false"
                         :path="`actions[${actionGroupIndex}].actionInstructList[${instructIndex}].action_param_type`"
                         :rule="configFormRules.action_param_type"
-                        class="max-w-30 w-full"
+                        class="max-w-50 w-full"
                       >
                         <NSelect
                           v-model:value="instructItem.action_param_type"
                           :options="instructItem.actionParamTypeOptions"
-                          class="max-w-40"
+                          class="max-w-50"
                           @update:value="data => actionParamTypeChange(instructItem, data)"
                         />
                       </NFormItem>
@@ -727,7 +772,9 @@ onMounted(() => {
                         <NSelect
                           v-model:value="instructItem.action_param"
                           :options="instructItem.actionParamOptions"
-                          @update:value="data => actionParamChange(instructItem, data)"
+                          @update:value="
+                            data => handleActionParamChange({ instructItem, data, actionGroupIndex, instructIndex })
+                          "
                         />
                       </NFormItem>
                       <NFormItem
@@ -870,6 +917,14 @@ onMounted(() => {
       </NFlex>
     </NCard>
     <PopUp v-model:visible="popUpVisible" type="add" @new-edit="newEdit" />
+    <ActionValueInput
+      v-model:visible="showActionValueInput"
+      :value="currentInstructItem?.actionValue"
+      :placeholder="currentInstructItem?.placeholder"
+      :selected-option="currentInstructItem?.selectedOption"
+      :device-id="currentInstructItem?.deviceId"
+      @confirm="handleActionValueConfirm"
+    />
   </div>
 </template>
 
