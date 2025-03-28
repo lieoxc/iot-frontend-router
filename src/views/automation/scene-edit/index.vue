@@ -176,7 +176,8 @@ const getDevice = async (groupId: any, name: any) => {
   queryDevice.value.group_id = groupId || null;
   queryDevice.value.device_name = name || null;
   const res = await deviceListAll(queryDevice.value);
-  deviceOptions.value = res.data;
+  // 过滤掉气象站模板设备
+  deviceOptions.value = res.data.filter((device: any) => device.device_config_name !== '气象站模板');
 };
 
 const queryDeviceName = ref([] as any);
