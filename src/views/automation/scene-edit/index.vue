@@ -410,65 +410,75 @@ const deleteIfGroupsSubItem = (actionGroupIndex: any, ifIndex: any) => {
 };
 
 const tabStore = useTabStore();
-// 表单提交
+
+// 定义动作值处理函数
+const handleActionValue = (instructItem: any, actionValue: any) => {
+  if (instructItem.action_param_type === 'telemetry' || instructItem.action_param_type === 'attributes') {
+    return JSON.stringify({ [instructItem.action_param]: actionValue });
+  }
+  if (instructItem.action_param_type === 'command') {
+    return JSON.stringify({
+      method: instructItem.action_param,
+      params: JSON.stringify(JSON.parse(actionValue))
+    });
+  }
+  if (['c_telemetry', 'c_attribute', 'c_command'].includes(instructItem.action_param_type)) {
+    return actionValue;
+  }
+  return '';
+};
+
+// 处理单个指令项
+const processInstructItem = (instructItem: any) => {
+  if (Array.isArray(instructItem.action_target)) {
+    return instructItem.action_target.map(deviceId => ({
+      ...instructItem,
+      action_target: deviceId,
+      action_value: handleActionValue(instructItem, instructItem.actionValue)
+    }));
+  }
+  return [
+    {
+      ...instructItem,
+      action_value: handleActionValue(instructItem, instructItem.actionValue)
+    }
+  ];
+};
+
+// 处理动作组
+const processActionGroup = (item: any) => {
+  if (item.actionType === '1') {
+    return item.actionInstructList.flatMap(processInstructItem);
+  }
+  return [{ ...item, action_type: item.actionType }];
+};
+
 const submitData = async () => {
   await configFormRef.value?.validate();
-  const actionsData = [] as any;
-  configForm.value.actions.map((item: any) => {
-    if (item.actionType === '1') {
-      item.actionInstructList.map((instructItem: any) => {
-        // 处理多个设备
-        if (Array.isArray(instructItem.action_target)) {
-          instructItem.action_target.forEach(deviceId => {
-            const newAction = { ...instructItem, action_target: deviceId };
-            // 处理不同类型的action_value
-            if (instructItem.action_param_type === 'telemetry' || instructItem.action_param_type === 'attributes') {
-              const action_value = {};
-              action_value[instructItem.action_param] = instructItem.actionValue;
-              newAction.action_value = JSON.stringify(action_value);
-            } else if (instructItem.action_param_type === 'command') {
-              const action_value = {
-                method: instructItem.action_param,
-                params: JSON.parse(instructItem.actionValue)
-              };
-              newAction.action_value = JSON.stringify(action_value);
-            } else if (
-              instructItem.action_param_type === 'c_telemetry' ||
-              instructItem.action_param_type === 'c_attribute' ||
-              instructItem.action_param_type === 'c_command'
-            ) {
-              newAction.action_value = instructItem.actionValue;
-            }
-            actionsData.push(newAction);
-          });
-        }
-      });
-    } else {
-      item.action_type = item.actionType;
-      actionsData.push(item);
-    }
-  });
+
+  // 处理所有动作数据
+  const actionsData = configForm.value.actions.flatMap(processActionGroup);
+
   dialog.warning({
     title: $t('common.tip'),
     content: $t('common.saveSceneInfo'),
     positiveText: $t('device_template.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
-      // configForm.value.actions = actionsData;
-      const configFormData = JSON.parse(JSON.stringify(configForm.value));
-      configFormData.actions = actionsData;
-      if (configId.value) {
-        const res = await sceneEdit(configFormData);
+      const configFormData = {
+        ...configForm.value,
+        actions: actionsData
+      };
+
+      try {
+        const res = configId.value ? await sceneEdit(configFormData) : await sceneAdd(configFormData);
+
         if (!res.error) {
           await tabStore.removeTab(route.path);
           router.replace({ path: '/automation/scene-manage' });
         }
-      } else {
-        const res = await sceneAdd(configFormData);
-        if (!res.error) {
-          await tabStore.removeTab(route.path);
-          router.replace({ path: '/automation/scene-manage' });
-        }
+      } catch (error) {
+        console.error('保存场景失败:', error);
       }
     }
   });
@@ -494,7 +504,7 @@ const dataEcho = actionsData => {
       item.actionParamOptions = [];
       const actionValueObj = JSON.parse(item.action_value);
       if (item.action_param_type === 'command') {
-        item.actionValue = JSON.stringify(actionValueObj.params);
+        item.actionValue = actionValueObj.params;
       }
       const key = `${item.action_param_type}-${item.action_param}-${item.action_value}`;
       if (!actionMap.has(key)) {
