@@ -141,27 +141,6 @@ const columns_to_show: Ref<any> = ref([
     }
   },
   {
-    key: 'warn_status',
-    minWidth: '100px',
-    label: () => $t('custom.devicePage.alarmStatus'),
-    render: row => {
-      if (row?.warn_status === 'Y') {
-        return (
-          <NSpace>
-            <NTag type="success">{$t('custom.devicePage.alarmed')}</NTag>
-          </NSpace>
-        );
-      }
-      return (
-        <NSpace>
-          <NTag type="warning">{$t('custom.devicePage.notAlarmed')}</NTag>
-        </NSpace>
-      );
-
-      // return row?.warn_status === 'Y' ? $t('custom.devicePage.alarmed') : $t('custom.devicePage.notAlarmed');
-    }
-  },
-  {
     key: 'device_config_name',
     minWidth: '100px',
     label: () => $t('custom.devicePage.deviceConfig')
