@@ -275,9 +275,11 @@ const getPlatform = computed(() => {
               <n-form-item :label="$t('page.irrigation.group.deviceName')" path="name">
                 <n-input v-model:value="deviceData.name" aria-required="true" />
               </n-form-item>
-              <n-form-item :label="$t('generate.device-number')" path="device_number">
+              <!--
+ <n-form-item :label="$t('generate.device-number')" path="device_number">
                 <n-input v-model:value="deviceData.device_number" />
-              </n-form-item>
+              </n-form-item> 
+-->
               <n-form-item :label="$t('custom.devicePage.label')" path="label">
                 <n-dynamic-tags v-model:value="labels" />
               </n-form-item>
