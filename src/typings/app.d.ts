@@ -1509,6 +1509,7 @@ declare namespace App {
         errorMessage: string;
         returnFail: string;
         returnSuccess: string;
+        returnTimeout: string;
         sendingFail: string;
         sendingSuccess: string;
         code: string;

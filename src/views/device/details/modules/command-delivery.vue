@@ -13,7 +13,8 @@ const formatStatus = (status: string) => {
     '1': $t('generate.sendingSuccess'),
     '2': $t('generate.sendingFail'),
     '3': $t('generate.returnSuccess'),
-    '4': $t('generate.returnFail')
+    '4': $t('generate.returnFail'),
+    '5': $t('generate.returnTimeout')
   };
 
   return statusjson[status] || '';

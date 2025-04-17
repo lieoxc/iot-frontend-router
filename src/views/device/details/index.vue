@@ -105,9 +105,6 @@ const changeTabs = v => {
     endLoading();
   }, 500);
 };
-const editConfig = () => {
-  showDialog.value = true;
-};
 
 const rules = {
   name: {
@@ -257,11 +254,7 @@ const getPlatform = computed(() => {
       <div>
         <div style="display: flex; margin-top: -5px">
           <span style="margin-right: 20px">{{ name || '--' }}</span>
-          <NButton v-show="true" type="primary" style="margin-top: -5px" @click="editConfig">
-            {{ $t('common.edit') }}
-          </NButton>
         </div>
-
         <n-modal
           v-model:show="showDialog"
           :title="$t('generate.issue-attribute')"
@@ -275,16 +268,13 @@ const getPlatform = computed(() => {
               <n-form-item :label="$t('page.irrigation.group.deviceName')" path="name">
                 <n-input v-model:value="deviceData.name" aria-required="true" />
               </n-form-item>
-              <!--
- <n-form-item :label="$t('generate.device-number')" path="device_number">
+              <n-form-item :label="$t('generate.device-number')" path="device_number">
                 <n-input v-model:value="deviceData.device_number" />
-              </n-form-item> 
--->
+              </n-form-item>
               <n-form-item :label="$t('custom.devicePage.label')" path="label">
                 <n-dynamic-tags v-model:value="labels" />
               </n-form-item>
               <n-form-item :label="$t('generate.device-description')">
-                <!-- <n-input v-model:value="queryParams.deviceDescribe" type="textarea"/> -->
                 <NInput v-model:value="deviceData.description" type="textarea" />
               </n-form-item>
               <n-space>

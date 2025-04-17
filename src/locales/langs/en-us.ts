@@ -1481,6 +1481,7 @@ const local: App.I18n.Schema = {
     errorMessage: 'Error-Message',
     returnSuccess: 'Return Success',
     returnFail: 'Return Fail',
+    returnTimeout: 'Return TimeOut',
     sendingFail: 'Sending Fail',
     sendingSuccess: 'Sending Success',
     code: 'Code',
