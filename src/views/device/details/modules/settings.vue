@@ -163,6 +163,7 @@ onMounted(() => {
   is_online.value = String(props.online);
   initData();
   deviceConfigList('');
+  deviceDataStore.fetchData(props.id);
 });
 
 const selectConfig = v => {
