@@ -29,7 +29,8 @@ const columns = [
   {
     title: $t('device_template.table_header.commandName'),
     minWidth: '140px',
-    key: ''
+    key: 'identify_name',
+    render: row => row.identify_name || '自定义命令'
   },
   {
     title: $t('generate.commandIssuanceTime'),

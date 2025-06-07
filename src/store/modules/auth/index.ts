@@ -2,7 +2,6 @@ import { computed, reactive, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { createDiscreteApi } from 'naive-ui';
 import { useLoading } from '@sa/hooks';
-import moment from 'moment';
 import { SetupStoreId } from '@/enum';
 import { useRouterPush } from '@/hooks/common/router';
 import { fetchGetUserInfo, fetchLogin, logout } from '@/service/api';
@@ -59,11 +58,8 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     }
     const { data: loginToken, error } = await fetchLogin(userName, newP, salt);
     if (!error) {
-      const { loop, info } = await loginByToken(loginToken);
+      const { loop } = await loginByToken(loginToken);
       if (loop) {
-        const password_last_updated = info.password_last_updated;
-        const now = new Date();
-        const cha = moment(now).diff(password_last_updated, 'days');
         const tipFunc = str => {
           dialog.warning({
             content: str,
@@ -86,8 +82,6 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
         if (!validPassword(password)) {
           tipFunc($t('card.pwdRuleReset'));
-        } else if (!info.password_last_updated || cha > 90) {
-          tipFunc($t('card.resetPwd'));
         } else {
           await routeStore.initAuthRoute();
           await redirectFromLogin();
