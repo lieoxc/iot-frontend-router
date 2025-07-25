@@ -11,15 +11,10 @@
   `npm install -g pnpm`；
   安装项目依赖：
   `pnpm install`。
-1. **启动服务**。
+1. **启动服务(开发调试使用)**。
   `pnpm dev` 或 `npm run dev`。
-1. **从主分支拉取一个分支进行开发**。
-2. **本地代码检查**。
-  提交代码时会自动触发代码检查，也可以自己手动进行代码检查：
-    - `pnpm lint` 运行ESLint进行代码检查；
-    - `pnpm typecheck` 运行TypeScript类型检查；
-    - `pnpm format` 格式化代码。
-1. 项目使用Github Actions进行CI/CD，需**检查CI/CD是否通过，并做出相应修改**。
-2. 代码提交后**提交PR**，等待审核。
-3. 代码审核通过后会被合并到主分支。
-4. 主分支代码会自动部署到生产环境。
+2. **编译部署**
+  `pnpm build` ,执行结束后，会在当前文件夹生成一个dist目录。
+    
+    1. 把dist目录压缩为dist.zip 
+    2. 把压缩包替换到：openwrt-package\iot\files\etc\iot\configs  目录下，替换原来的dist.zip （openwrt-package 来源于：https://github.com/lieoxc/openwrt-package）
